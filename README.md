@@ -29,3 +29,15 @@ S3 → API Gateway → Lambda → (S3 + SNS)
 I built this as a portfolio project to demonstrate serverless architecture, IAM, CORS, and frontend integration.
 
 December 2025
+
+## Recommendation to Avoid Any Surprise Charges
+Delete these when done:
+
+1. Empty and delete the S3 bucket.
+2. Delete the API Gateway API (and stage).
+3. Delete the Lambda functions.
+4. Delete the SNS topic (auto-removes subscriptions).
+
+
+
+
