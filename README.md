@@ -17,9 +17,6 @@ A fully serverless web application built with:
 ## Architecture
 S3 → API Gateway → Lambda → (S3 + SNS)
 
-## Live Demo
-[https://your-bucket.s3-website-us-east-1.amazonaws.com](http://your-bucket.s3-website-us-east-1.amazonaws.com)
-
 ## Setup (If Rebuilding)
 1. Create S3 bucket with static hosting
 2. Create SNS topic
