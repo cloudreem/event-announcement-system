@@ -45,8 +45,7 @@ Note the Website endpoint URL (e.g., http://my-event-announcement-system.s3-webs
 Make the bucket publicly readable:Go to Permissions tab → Bucket policy → Edit
 Paste the following policy (replace my-event-announcement-system with your bucket name):
 
-'json'
-
+```json
 {
   "Version": "2012-10-17",
   "Statement": [
