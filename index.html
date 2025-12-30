@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Announcement System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Event Announcements</h1>
+
+        <section>
+            <h2>Subscribe to Notifications</h2>
+            <input type="email" id="email" placeholder="Your email address" required>
+            <button id="subscribeBtn">Subscribe</button>
+            <p id="subMsg" class="message"></p>
+        </section>
+
+        <section>
+            <h2>Create New Event</h2>
+            <input type="text" id="title" placeholder="Event Title" required><br><br>
+            <textarea id="desc" placeholder="Event Description" rows="4" cols="50"></textarea><br><br>
+            <input type="date" id="date" required><br><br>
+            <button id="createEventBtn">Announce Event</button>
+            <p id="eventMsg" class="message"></p>
+        </section>
+
+        <section>
+            <h2>Current Events</h2>
+            <ul id="eventsList">
+                <!-- Events loaded dynamically -->
+            </ul>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
