@@ -1,23 +1,15 @@
-# AWS Event Announcement System - Serverless Project
+AWS Event Announcement System - Serverless ProjectA fully serverless event announcement platform built with AWS services:Static website hosted on S3
+Backend API powered by API Gateway + Lambda
+Email notifications via SNS
+Event data stored in a simple events.json file in S3
 
-A fully serverless event announcement platform built with AWS services:
+Users can:Subscribe to receive email notifications about new events
+Admins (or anyone) can create new events
+New events are automatically announced via email to all subscribers
+Current events are displayed on the frontend
 
-- Static website hosted on **S3**
-- Backend API powered by **API Gateway** + **Lambda**
-- Email notifications via **SNS**
-- Event data stored in a simple `events.json` file in S3
+Perfect for small communities, clubs, or internal announcements.Architecture Overview
 
-Users can:
-- Subscribe to receive email notifications about new events
-- Admins (or anyone) can create new events
-- New events are automatically announced via email to all subscribers
-- Current events are displayed on the frontend
-
-Perfect for small communities, clubs, or internal announcements.
-
-## Architecture Overview
-
-```
 Frontend (S3 Static Website)
         ↓ (HTTPS)
 API Gateway (REST API)
@@ -27,41 +19,34 @@ SubscribeToEventsLambda → SNS (email subscription)
 CreateEventLambda → Updates events.json in S3 + Publishes to SNS Topic
         ↓
 SNS Topic → Sends email to all confirmed subscribers
-```
 
-## Prerequisites
+PrerequisitesAn AWS account
+Basic familiarity with the AWS Management Console
+A code editor for creating the frontend files
 
-- An AWS account
-- Basic familiarity with the AWS Management Console
-- A code editor for creating the frontend files
+Step-by-Step Setup GuideStep 1: Create the S3 Bucket for Static Website HostingGo to the S3 service in the AWS Console.
+Click Create bucket.
+Enter a globally unique bucket name (e.g., my-event-announcement-system-2025).
+Choose your preferred region (recommended: us-east-1 for lower costs).
+Uncheck "Block all public access" (we need public read access for the website).
+Leave other settings as default → Create bucket.
+Upload initial files (you'll create these in Step 6):events.json (content: [])
+index.html
+style.css
+script.js
 
-## Step-by-Step Setup Guide
+Enable static website hosting:Select your bucket → Properties tab → Static website hosting → Edit
+Choose Enable
+Index document: index.html
+Error document (optional): error.html
+Save changes
+Note the Website endpoint URL (e.g., http://my-event-announcement-system.s3-website-us-east-1.amazonaws.com) — you'll use this later.
 
-### Step 1: Create the S3 Bucket for Static Website Hosting
+Make the bucket publicly readable:Go to Permissions tab → Bucket policy → Edit
+Paste the following policy (replace my-event-announcement-system with your bucket name):
 
-1. Go to the **S3** service in the AWS Console.
-2. Click **Create bucket**.
-3. Enter a globally unique bucket name (e.g., `my-event-announcement-system-2025`).
-4. Choose your preferred region (recommended: `us-east-1` for lower costs).
-5. **Uncheck** "Block all public access" (we need public read access for the website).
-6. Leave other settings as default → **Create bucket**.
-7. Upload initial files (you'll create these in Step 6):
-   - `events.json` (content: `[]`)
-   - `index.html`
-   - `style.css`
-   - `script.js`
-8. Enable static website hosting:
-   - Select your bucket → **Properties** tab → **Static website hosting** → **Edit**
-   - Choose **Enable**
-   - Index document: `index.html`
-   - Error document (optional): `error.html`
-   - **Save changes**
-   - Note the **Website endpoint** URL (e.g., `http://my-event-announcement-system.s3-website-us-east-1.amazonaws.com`) — you'll use this later.
-9. Make the bucket publicly readable:
-   - Go to **Permissions** tab → **Bucket policy** → **Edit**
-   - Paste the following policy (replace `my-event-announcement-system` with your bucket name):
+json
 
-```json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -74,34 +59,27 @@ SNS Topic → Sends email to all confirmed subscribers
     }
   ]
 }
-```
 
-   - **Save changes**
+Save changes
 
-### Step 2: Create an SNS Topic
+Step 2: Create an SNS TopicGo to Amazon SNS → Topics → Create topic
+Type: Standard
+Name: EventAnnouncementsTopic
+Click Create topic
+Copy the Topic ARN — you'll need it in the Lambda functions.
 
-1. Go to **Amazon SNS** → **Topics** → **Create topic**
-2. Type: **Standard**
-3. Name: `EventAnnouncementsTopic`
-4. Click **Create topic**
-5. Copy the **Topic ARN** — you'll need it in the Lambda functions.
+Step 3: Create the Lambda FunctionsCommon SettingsRuntime: Python 3.12
+Architecture: x86_64
+Timeout: Increase to 10 seconds
 
-### Step 3: Create the Lambda Functions
+3a: SubscribeToEventsLambda (/subscribe endpoint)Go to Lambda → Create function
+Name: SubscribeToEventsLambda
+Runtime: Python 3.12
+Create function
+In the Code tab, replace the default code with:
 
-#### Common Settings
-- Runtime: **Python 3.12**
-- Architecture: **x86_64**
-- Timeout: Increase to **10 seconds**
+python
 
-#### 3a: SubscribeToEventsLambda (/subscribe endpoint)
-
-1. Go to **Lambda** → **Create function**
-2. Name: `SubscribeToEventsLambda`
-3. Runtime: Python 3.12
-4. Create function
-5. In the **Code** tab, replace the default code with:
-
-```python
 import json
 import boto3
 
@@ -140,16 +118,14 @@ def lambda_handler(event, context):
             },
             'body': json.dumps({'error': str(e)})
         }
-```
 
-6. **Deploy** the function.
+Deploy the function.
 
-#### 3b: CreateEventLambda (/create-event endpoint)
+3b: CreateEventLambda (/create-event endpoint)Create another function named CreateEventLambda
+Replace code with:
 
-1. Create another function named `CreateEventLambda`
-2. Replace code with:
+python
 
-```python
 import json
 import boto3
 
@@ -209,17 +185,15 @@ def lambda_handler(event, context):
             },
             'body': json.dumps({'error': str(e)})
         }
-```
 
-3. **Deploy**
+Deploy
 
-#### Add IAM Permissions to CreateEventLambda
+Add IAM Permissions to CreateEventLambdaGo to CreateEventLambda → Configuration → Permissions
+Click the role name → Add permissions → Create inline policy → JSON
+Paste:
 
-1. Go to `CreateEventLambda` → **Configuration** → **Permissions**
-2. Click the role name → **Add permissions** → **Create inline policy** → JSON
-3. Paste:
+json
 
-```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -230,63 +204,43 @@ def lambda_handler(event, context):
         }
     ]
 }
-```
 
-4. Name it (e.g., `S3AccessForEvents`) → Create policy
+Name it (e.g., S3AccessForEvents) → Create policy
 
-> Note: Both Lambdas should have SNS publish/subscribe permissions by default (via AWSLambdaBasicExecutionRole). If not, add them similarly.
+Note: Both Lambdas should have SNS publish/subscribe permissions by default (via AWSLambdaBasicExecutionRole). If not, add them similarly.
+Step 4: Create the API GatewayGo to API Gateway → Create API → Choose REST API → Build
+API name: EventAnnouncementAPI
+Endpoint type: Regional
+Create API
 
-### Step 4: Create the API Gateway
+Set Security Policy (Recommended for 2025+)In the left menu, go to Settings → Edit
+Under Security policy, select TLS 1.2 (or TLS 1.3 if you want stricter)
+Save
 
-1. Go to **API Gateway** → **Create API** → Choose **REST API** → **Build**
-2. API name: `EventAnnouncementAPI`
-3. Endpoint type: **Regional**
-4. Create API
+Create Resources and MethodsFor /subscribe:Under Resources, click Actions → Create Resource
+Resource name: subscribe, Path: /subscribe → Create
+Select /subscribe → Actions → Create Method → Choose POST
+Integration type: Lambda Function
+Check Use Lambda Proxy integration
+Select your region and SubscribeToEventsLambda
+Save → Confirm permission to invoke Lambda
 
-#### Set Security Policy (Recommended for 2025+)
+For /create-event:Repeat: Create resource create-event → Path /create-event
+Create POST method → Integrate with CreateEventLambda (proxy integration)
 
-1. In the left menu, go to **Settings** → **Edit**
-2. Under **Security policy**, select **TLS 1.2** (or TLS 1.3 if you want stricter)
-3. Save
+Enable CORSSelect /subscribe → Actions → Enable CORS
+Accept defaults → Enable CORS and replace existing headers
+Repeat for /create-event
 
-#### Create Resources and Methods
+For production, restrict Access-Control-Allow-Origin to your S3 domain instead of *
+Deploy the APIActions → Deploy API
+Stage: [New Stage]
+Stage name: prod
+Deploy
+Copy the Invoke URL (e.g., https://abc123.execute-api.us-east-1.amazonaws.com/prod)
 
-**For /subscribe:**
-1. Under **Resources**, click **Actions** → **Create Resource**
-2. Resource name: `subscribe`, Path: `/subscribe` → Create
-3. Select `/subscribe` → **Actions** → **Create Method** → Choose **POST**
-4. Integration type: **Lambda Function**
-5. Check **Use Lambda Proxy integration**
-6. Select your region and `SubscribeToEventsLambda`
-7. Save → Confirm permission to invoke Lambda
+Step 5: Frontend Files (Upload to S3)Create these files locally and upload them to your S3 bucket.index.htmlhtml
 
-**For /create-event:**
-1. Repeat: Create resource `create-event` → Path `/create-event`
-2. Create **POST** method → Integrate with `CreateEventLambda` (proxy integration)
-
-#### Enable CORS
-
-1. Select `/subscribe` → **Actions** → **Enable CORS**
-2. Accept defaults → **Enable CORS and replace existing headers**
-3. Repeat for `/create-event`
-
-> For production, restrict `Access-Control-Allow-Origin` to your S3 domain instead of `*`
-
-#### Deploy the API
-
-1. **Actions** → **Deploy API**
-2. Stage: **[New Stage]**
-3. Stage name: `prod`
-4. Deploy
-5. Copy the **Invoke URL** (e.g., `https://abc123.execute-api.us-east-1.amazonaws.com/prod`)
-
-### Step 5: Frontend Files (Upload to S3)
-
-Create these files locally and upload them to your S3 bucket.
-
-#### `index.html`
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -324,11 +278,9 @@ Create these files locally and upload them to your S3 bucket.
     <script src="script.js"></script>
 </body>
 </html>
-```
 
-#### `style.css`
+style.csscss
 
-```css
 body {
     font-family: Arial, sans-serif;
     margin: 40px;
@@ -385,11 +337,9 @@ p {
     font-weight: bold;
     min-height: 24px;
 }
-```
 
-#### `script.js`
+script.jsjavascript
 
-```javascript
 const API_BASE = 'https://YOUR-API-ID.execute-api.YOUR-REGION.amazonaws.com/prod';  // ← Replace with your API Gateway URL
 const EVENTS_URL = 'http://YOUR-BUCKET.s3-website-YOUR-REGION.amazonaws.com/events.json';  // ← Replace with your S3 website URL
 
@@ -451,30 +401,16 @@ async function loadEvents() {
 
 // Load events when page opens
 loadEvents();
-```
 
-#### `events.json`
+events.jsonjson
 
-```json
 []
-```
 
-Upload all four files to your S3 bucket root.
+Upload all four files to your S3 bucket root.Final Step: Test Your ApplicationVisit your S3 website endpoint URL.
+Subscribe with a real email → check inbox/spam for confirmation link.
+Confirm subscription.
+Create a test event → you should receive an email notification.
+Refresh the page → new event appears in the list.
 
-### Final Step: Test Your Application
+Done! You now have a working serverless event announcement system.
 
-1. Visit your S3 website endpoint URL.
-2. Subscribe with a real email → check inbox/spam for confirmation link.
-3. Confirm subscription.
-4. Create a test event → you should receive an email notification.
-5. Refresh the page → new event appears in the list.
-
-**Done!** You now have a working serverless event announcement system.
-
-## Security Notes
-
-- For production: Restrict CORS to your domain
-- Consider adding authentication (e.g., API keys or Cognito) to `/create-event`
-- Use CloudFront in front of S3 for HTTPS and better performance
-
-Enjoy your serverless event system! 🚀
